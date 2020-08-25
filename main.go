@@ -4,58 +4,35 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 
-	"github.com/containous/yaegi/interp"
-	"github.com/containous/yaegi/stdlib"
 	"github.com/go-clix/cli"
-	"github.com/grafana/tanka/pkg/kubernetes/manifest"
+	"github.com/sh0rez/klint/pkg/dynamic"
 	"github.com/sh0rez/klint/pkg/klint"
 )
-
-var Symbols = make(interp.Exports)
 
 func main() {
 	log.SetFlags(0)
 
 	cmd := cli.Command{
-		Use: "klint [.yaml, ...]",
+		Use:   "klint [.yaml, ...]",
+		Short: "klint validates Kubernetes configurations using custom rules written in Golang",
 	}
 
+	ruleFiles := cmd.Flags().StringSliceP("rules", "R", nil, ".klint.go files containing rules to load")
+
 	cmd.Run = func(cmd *cli.Command, args []string) error {
-		i := interp.New(interp.Options{
-			GoPath:    "/tmp",
-			BuildTags: []string{"klint"},
-		})
-		i.Use(stdlib.Symbols)
-		i.Use(Symbols)
+		if len(*ruleFiles) == 0 {
+			return fmt.Errorf("Please pass at least one rule using --rules / -R")
+		}
 
-		// load rule.klint
-		// TODO: dynamic rule loading
-		ruleSrc, err := ioutil.ReadFile("rule.klint.go")
+		rules, err := dynamic.LoadFiles(*ruleFiles)
 		if err != nil {
 			return err
-		}
-
-		if _, err := i.Eval(string(ruleSrc)); err != nil {
-			return err
-		}
-
-		rulePtr, err := i.Eval("lint")
-		if err != nil {
-			return err
-		}
-
-		rule, ok := rulePtr.Interface().(func(manifest.Manifest) (klint.Findings, error))
-		if !ok {
-			return fmt.Errorf("`lint` function is not of `klint.Rule` type but `%T`", rulePtr.Interface())
 		}
 
 		k := klint.Klint{
-			Rules: klint.Rules{
-				"rule.klint": rule,
-			},
+			Rules: rules,
 		}
 
 		return k.LintFiles(args...)

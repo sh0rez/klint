@@ -3,40 +3,12 @@ package klint
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
-	"github.com/go-clix/cli"
 	"github.com/grafana/tanka/pkg/kubernetes/manifest"
 	"gopkg.in/yaml.v3"
 )
-
-func Main(f func(manifest.Manifest) (Findings, error)) {
-	r := Rule(f)
-
-	cmd := cli.Command{
-		Use:   "klint-rule [.yaml, ...]",
-		Short: "klint-rule runs a single rule",
-	}
-
-	cmd.Run = func(cmd *cli.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("Please specify at least one .yaml file containing Kubernetes resources")
-		}
-
-		k := Klint{
-			Rules: Rules{"": r},
-		}
-
-		return k.LintFiles(args...)
-	}
-
-	if err := cmd.Execute(); err != nil {
-		log.SetFlags(0)
-		log.Fatalln(err)
-	}
-}
 
 // Rule is the function interface used by the individual rules
 type Rule func(manifest.Manifest) (Findings, error)
@@ -60,59 +32,13 @@ func (r Rules) run(m manifest.Manifest) (Findings, error) {
 	return f, nil
 }
 
-// Level is the severity of a Finding
-type Level int
-
-func (l Level) String() string {
-	return Levels[l]
-}
-
-const (
-	Info Level = iota
-	Warning
-	Error
-)
-
-var Levels = map[Level]string{
-	Info:    "INFO",
-	Warning: "WARN",
-	Error:   "ERROR",
-}
-
-// Finding describes a single thing the Rule found required to be mentioned
-type Finding struct {
-	// Level of the finding
-	Level Level
-
-	// Field that is offending
-	Field string
-
-	// Message in human readable format what happened, and possibly how to fix it
-	Message string
-
-	// internal fields
-	rule string
-}
-
-func (f Finding) String() string {
-	name := ""
-	if f.rule != "" {
-		name = " – " + f.rule
-	}
-
-	return fmt.Sprintf("%s%s – %s: %s", f.Level, name, f.Field, f.Message)
-}
-
-type Findings []Finding
-
-func Found(f ...Finding) Findings {
-	return f
-}
-
+// Klint lints Kubernetes manifests using runtime-loaded rules.
 type Klint struct {
 	Rules Rules
 }
 
+// LintFiles lints all Manifests in the given files using the rules inside the
+// Klint instance
 func (k Klint) LintFiles(files ...string) error {
 	var list manifest.List
 
@@ -143,6 +69,7 @@ func (k Klint) LintFiles(files ...string) error {
 	return k.Lint(list)
 }
 
+// Lint all given manifests using the rules in the Klint instance
 func (k Klint) Lint(list manifest.List) error {
 	result := make(Result)
 
@@ -162,6 +89,8 @@ func (k Klint) Lint(list manifest.List) error {
 	return result
 }
 
+// Result is returned by Lint. It maps resource names to their respective
+// findings.
 type Result map[string]Findings
 
 func (r Result) Error() string {

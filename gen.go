@@ -12,7 +12,7 @@ import (
 
 func main() {
 	ex := extract.Extractor{
-		Dest: "main",
+		Dest: "dynamic",
 	}
 
 	// github.com/grafana/tanka/pkg/kubernetes/manifest
@@ -20,7 +20,7 @@ func main() {
 	if _, err := ex.Extract("github.com/grafana/tanka/pkg/kubernetes/manifest", "", &buf); err != nil {
 		log.Fatalln(err)
 	}
-	if err := ioutil.WriteFile("yaegi_pkg_manifest.go", buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile("pkg/dynamic/yaegi_pkg_manifest.go", buf.Bytes(), 0644); err != nil {
 		log.Fatalln(err)
 	}
 
@@ -29,7 +29,7 @@ func main() {
 	if _, err := ex.Extract("github.com/sh0rez/klint/pkg/klint", "", &buf); err != nil {
 		log.Fatalln(err)
 	}
-	if err := ioutil.WriteFile("yaegi_pkg_klint.go", buf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile("pkg/dynamic/yaegi_pkg_klint.go", buf.Bytes(), 0644); err != nil {
 		log.Fatalln(err)
 	}
 }

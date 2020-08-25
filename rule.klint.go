@@ -7,10 +7,6 @@ import (
 	"github.com/sh0rez/klint/pkg/klint"
 )
 
-func main() {
-	klint.Main(lint)
-}
-
 func lint(m manifest.Manifest) (klint.Findings, error) {
 	if m.Metadata().Namespace() == "" {
 		f := klint.Finding{
@@ -23,4 +19,8 @@ func lint(m manifest.Manifest) (klint.Findings, error) {
 	}
 
 	return nil, nil
+}
+
+func main() {
+	klint.Main(lint)
 }
