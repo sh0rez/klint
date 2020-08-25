@@ -1,9 +1,15 @@
+// +build klint
+
 package main
 
 import (
 	"github.com/grafana/tanka/pkg/kubernetes/manifest"
 	"github.com/sh0rez/klint/pkg/klint"
 )
+
+func main() {
+	klint.Main(lint)
+}
 
 func lint(m manifest.Manifest) (klint.Findings, error) {
 	if m.Metadata().Namespace() == "" {

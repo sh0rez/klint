@@ -1,4 +1,4 @@
-// +build build_go
+// +build ignore
 
 package main
 
