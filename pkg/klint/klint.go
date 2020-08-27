@@ -96,6 +96,10 @@ type Result map[string]Findings
 func (r Result) Error() string {
 	s := ""
 	for kindName, findings := range r {
+		if len(findings) == 0 {
+			continue
+		}
+
 		s += kindName + ":\n"
 		for _, f := range findings {
 			s += " " + f.String() + "\n"
