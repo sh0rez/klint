@@ -79,6 +79,10 @@ func (k Klint) Lint(list manifest.List) error {
 			return err
 		}
 
+		if f == nil {
+			continue
+		}
+
 		result[m.KindName()] = append(result[m.KindName()], f...)
 	}
 

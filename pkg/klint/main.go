@@ -16,6 +16,8 @@ var IS_YAEGI = false
 // during development, without the need for an interpreter.
 // It allows to `go run` a .klint.go file
 func Main(f func(manifest.Manifest) (Findings, error)) {
+	log.SetFlags(0)
+
 	if IS_YAEGI {
 		return
 	}
@@ -40,7 +42,8 @@ func Main(f func(manifest.Manifest) (Findings, error)) {
 	}
 
 	if err := cmd.Execute(); err != nil {
-		log.SetFlags(0)
 		log.Fatalln(err)
 	}
+
+	log.Println("All resources pass.")
 }

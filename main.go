@@ -46,7 +46,12 @@ func main() {
 			Rules: rules,
 		}
 
-		return k.LintFiles(args...)
+		if err := k.LintFiles(args...); err != nil {
+			return err
+		}
+
+		log.Println("All resources pass.")
+		return nil
 	}
 
 	if err := cmd.Execute(); err != nil {

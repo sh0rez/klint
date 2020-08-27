@@ -4,32 +4,32 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"path"
 
 	"github.com/containous/yaegi/extract"
 )
 
 func main() {
-	ex := extract.Extractor{
-		Dest: "dynamic",
+	genPkg("github.com/grafana/tanka/pkg/kubernetes/manifest")
+	genPkg("github.com/sh0rez/klint/pkg/klint")
+}
+
+var ex = extract.Extractor{
+	Dest: "dynamic",
+}
+
+func genPkg(name string) {
+	buf := bytes.Buffer{}
+	if _, err := ex.Extract(name, "", &buf); err != nil {
+		log.Fatalln(err)
 	}
 
-	// github.com/grafana/tanka/pkg/kubernetes/manifest
-	var buf bytes.Buffer
-	if _, err := ex.Extract("github.com/grafana/tanka/pkg/kubernetes/manifest", "", &buf); err != nil {
-		log.Fatalln(err)
-	}
-	if err := ioutil.WriteFile("pkg/dynamic/yaegi_pkg_manifest.go", buf.Bytes(), 0644); err != nil {
-		log.Fatalln(err)
-	}
-
-	// github.com/sh0rez/klint/pkg/klint
-	buf = bytes.Buffer{}
-	if _, err := ex.Extract("github.com/sh0rez/klint/pkg/klint", "", &buf); err != nil {
-		log.Fatalln(err)
-	}
-	if err := ioutil.WriteFile("pkg/dynamic/yaegi_pkg_klint.go", buf.Bytes(), 0644); err != nil {
+	filename := fmt.Sprintf("pkg/dynamic/yaegi_pkg_%s.go", path.Base(name))
+	fmt.Println(filename)
+	if err := ioutil.WriteFile(filename, buf.Bytes(), 0644); err != nil {
 		log.Fatalln(err)
 	}
 }
