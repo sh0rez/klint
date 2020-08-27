@@ -44,3 +44,8 @@ $ klint deployment.yaml
 Deployment/nginx-deployment:
  WARN – rule.klint – metadata.namespace: Namespace is required for all resources
 ```
+
+## Example
+
+For an example, check the
+[`example`](https://github.com/sh0rez/klint/tree/master/example) directory.
